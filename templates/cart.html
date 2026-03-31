@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block title %}Your Bag — Lore & Co.{% endblock %}
+
+{% block extra_css %}
+<style>
+  .cart-page { max-width: 1200px; margin: 0 auto; padding: 4rem 2rem; }
+  .cart-page h1 {
+    font-family: var(--font-serif);
+    font-size: 2.2rem; font-weight: 300; margin-bottom: 2.5rem;
+  }
+  .cart-layout { display: grid; grid-template-columns: 1fr 360px; gap: 4rem; align-items: start; }
+
+  .cart-items {}
+  .cart-item {
+    display: grid; grid-template-columns: 100px 1fr auto;
+    gap: 1.5rem; align-items: start;
+    padding: 1.5rem 0; border-bottom: 1px solid var(--border);
+  }
+  .cart-item-img { width: 100px; height: 100px; object-fit: cover; }
+  .cart-item-name {
+    font-family: var(--font-serif);
+    font-size: 1.05rem; margin-bottom: 0.3rem;
+  }
+  .cart-item-price { font-size: 0.85rem; color: var(--bark); margin-bottom: 0.75rem; }
+  .cart-item-controls { display: flex; align-items: center; gap: 1rem; }
+  .qty-form { display: flex; align-items: center; gap: 0.5rem; }
+  .qty-form input {
+    width: 50px; padding: 0.3rem 0.5rem;
+    border: 1px solid var(--border); text-align: center;
+    font-family: var(--font-sans); font-size: 0.875rem;
+  }
+  .qty-form button {
+    padding: 0.3rem 0.75rem;
+    background: none; border: 1px solid var(--border);
+    cursor: pointer; font-size: 0.7rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .qty-form button:hover { background: var(--ink); color: white; border-color: var(--ink); }
+  .remove-form button {
+    background: none; border: none; cursor: pointer;
+    font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--bark); transition: color 0.2s; padding: 0;
+  }
+  .remove-form button:hover { color: var(--rust); }
+  .cart-item-subtotal {
+    font-size: 0.95rem; color: var(--ink); white-space: nowrap; text-align: right;
+  }
+
+  /* Summary */
+  .cart-summary {
+    position: sticky; top: 80px;
+    background: var(--cream); padding: 2rem;
+    border: 1px solid var(--border);
+  }
+  .cart-summary h3 {
+    font-family: var(--font-serif);
+    font-size: 1.3rem; font-weight: 400; margin-bottom: 1.5rem;
+  }
+  .summary-row {
+    display: flex; justify-content: space-between;
+    font-size: 0.875rem; color: var(--bark);
+    padding: 0.5rem 0; border-bottom: 1px solid var(--border);
+  }
+  .summary-total {
+    display: flex; justify-content: space-between;
+    font-size: 1.1rem; font-weight: 500;
+    margin-top: 1rem; margin-bottom: 1.5rem;
+  }
+  .checkout-btn { width: 100%; padding: 1rem; font-size: 0.8rem; margin-bottom: 0.75rem; }
+  .continue-link {
+    display: block; text-align: center;
+    font-size: 0.75rem; color: var(--bark); text-decoration: none;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .continue-link:hover { color: var(--rust); }
+  .secure-badge {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.7rem; color: var(--bark);
+    margin-top: 1.5rem; padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .empty-cart { text-align: center; padding: 5rem 0; }
+  .empty-cart h2 {
+    font-family: var(--font-serif);
+    font-size: 2rem; font-weight: 300; margin-bottom: 0.75rem;
+  }
+  .empty-cart p { color: var(--bark); margin-bottom: 2rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cart-page">
+  <h1>Your Bag</h1>
+
+  {% if items %}
+  <div class="cart-layout">
+    <div class="cart-items">
+      {% for item in items %}
+      <div class="cart-item">
+        <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="cart-item-img">
+        <div>
+          <p class="cart-item-name">{{ item.product.name }}</p>
+          <p class="cart-item-price">${{ "%.2f"|format(item.product.price) }} each</p>
+          <div class="cart-item-controls">
+            <form class="qty-form" action="{{ url_for('update_cart') }}" method="post">
+              <input type="hidden" name="product_id" value="{{ item.product.id }}">
+              <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="99">
+              <button type="submit">Update</button>
+            </form>
+            <form class="remove-form" action="{{ url_for('remove_from_cart', product_id=item.product.id) }}" method="post">
+              <button type="submit">Remove</button>
+            </form>
+          </div>
+        </div>
+        <div class="cart-item-subtotal">${{ "%.2f"|format(item.subtotal) }}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="cart-summary">
+      <h3>Order Summary</h3>
+      {% for item in items %}
+      <div class="summary-row">
+        <span>{{ item.product.name }} × {{ item.quantity }}</span>
+        <span>${{ "%.2f"|format(item.subtotal) }}</span>
+      </div>
+      {% endfor %}
+      <div class="summary-total">
+        <span>Total</span>
+        <span>${{ "%.2f"|format(total) }}</span>
+      </div>
+      <form action="{{ url_for('checkout') }}" method="post">
+        <button type="submit" class="btn btn-primary checkout-btn">Checkout with Stripe</button>
+      </form>
+      <a href="{{ url_for('shop') }}" class="continue-link">← Continue Shopping</a>
+      <div class="secure-badge">
+        🔒 Secure checkout powered by Stripe
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="empty-cart">
+    <h2>Your bag is empty</h2>
+    <p>Find something you'll love.</p>
+    <a href="{{ url_for('shop') }}" class="btn btn-primary">Browse the Shop</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

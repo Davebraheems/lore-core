@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% block title %}Lore & Co. — Thoughtfully Curated{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* HERO */
+  .hero {
+    background: var(--cream);
+    padding: 6rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1600&h=700&fit=crop') center/cover;
+    opacity: 0.08;
+  }
+  .hero-inner { position: relative; max-width: 700px; margin: 0 auto; }
+  .hero-eyebrow {
+    font-size: 0.7rem; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--rust); margin-bottom: 1.5rem;
+  }
+  .hero h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    font-weight: 300; line-height: 1.1;
+    color: var(--ink); margin-bottom: 1.5rem;
+  }
+  .hero h1 em { color: var(--rust); font-style: italic; }
+  .hero p {
+    font-size: 1rem; color: var(--bark);
+    max-width: 500px; margin: 0 auto 2.5rem;
+    line-height: 1.8;
+  }
+  .hero-actions { display: flex; gap: 1rem; justify-content: center; }
+
+  /* CATEGORIES */
+  .section { padding: 5rem 2rem; }
+  .section-header { text-align: center; margin-bottom: 3rem; }
+  .section-eyebrow {
+    font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--rust); margin-bottom: 0.75rem;
+  }
+  .section-header h2 {
+    font-family: var(--font-serif);
+    font-size: 2.5rem; font-weight: 300; color: var(--ink);
+  }
+
+  .category-grid {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+  }
+  .category-card {
+    position: relative; overflow: hidden; aspect-ratio: 3/4;
+    text-decoration: none; display: block;
+  }
+  .category-card img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.6s ease;
+  }
+  .category-card:hover img { transform: scale(1.05); }
+  .category-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(26,22,18,0.7) 0%, transparent 60%);
+    display: flex; align-items: flex-end; padding: 2rem;
+  }
+  .category-label {
+    color: white;
+    font-family: var(--font-serif);
+    font-size: 1.6rem; font-weight: 300;
+  }
+  .category-label span {
+    display: block; font-family: var(--font-sans);
+    font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: rgba(255,255,255,0.7); margin-bottom: 0.4rem;
+  }
+
+  /* FEATURED */
+  .featured-section { background: var(--cream); }
+  .products-grid {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem;
+  }
+  .product-card { text-decoration: none; color: inherit; }
+  .product-card-img {
+    aspect-ratio: 1; overflow: hidden;
+    background: #ede7dc; margin-bottom: 1rem;
+  }
+  .product-card-img img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  .product-card:hover .product-card-img img { transform: scale(1.04); }
+  .product-card-category {
+    font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--rust); margin-bottom: 0.3rem;
+  }
+  .product-card-name {
+    font-family: var(--font-serif);
+    font-size: 1.1rem; font-weight: 400; margin-bottom: 0.3rem;
+    line-height: 1.3;
+  }
+  .product-card-price {
+    font-size: 0.875rem; color: var(--bark);
+  }
+
+  /* BANNER */
+  .banner {
+    background: var(--ink); color: var(--cream);
+    padding: 5rem 2rem; text-align: center;
+  }
+  .banner h2 {
+    font-family: var(--font-serif);
+    font-size: 2.8rem; font-weight: 300; margin-bottom: 1rem;
+  }
+  .banner p {
+    font-size: 1rem; color: #9a8f82;
+    max-width: 500px; margin: 0 auto 2rem; line-height: 1.8;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">New Arrivals — Spring 2024</p>
+    <h1>Objects worth<br><em>keeping</em></h1>
+    <p>A thoughtfully curated shop for books, stationery, and everyday objects that earn their place.</p>
+    <div class="hero-actions">
+      <a href="{{ url_for('shop') }}" class="btn btn-primary">Shop Now</a>
+      <a href="{{ url_for('shop', category='Books') }}" class="btn btn-secondary">Browse Books</a>
+    </div>
+  </div>
+</section>
+
+<!-- Categories -->
+<section class="section">
+  <div class="section-header">
+    <p class="section-eyebrow">Explore</p>
+    <h2>Shop by Category</h2>
+  </div>
+  <div class="category-grid">
+    <a href="{{ url_for('shop', category='Books') }}" class="category-card">
+      <img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&h=800&fit=crop" alt="Books">
+      <div class="category-overlay">
+        <div class="category-label"><span>Explore</span>Books</div>
+      </div>
+    </a>
+    <a href="{{ url_for('shop', category='Stationery') }}" class="category-card">
+      <img src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=600&h=800&fit=crop" alt="Stationery">
+      <div class="category-overlay">
+        <div class="category-label"><span>Explore</span>Stationery</div>
+      </div>
+    </a>
+    <a href="{{ url_for('shop', category='Lifestyle') }}" class="category-card">
+      <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=800&fit=crop" alt="Lifestyle">
+      <div class="category-overlay">
+        <div class="category-label"><span>Explore</span>Lifestyle</div>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- Featured Products -->
+{% if featured %}
+<section class="section featured-section">
+  <div class="section-header">
+    <p class="section-eyebrow">Hand-picked</p>
+    <h2>Featured Items</h2>
+  </div>
+  <div class="products-grid">
+    {% for product in featured %}
+    <a href="{{ url_for('product_detail', product_id=product.id) }}" class="product-card">
+      <div class="product-card-img">
+        <img src="{{ product.image_url }}" alt="{{ product.name }}">
+      </div>
+      <p class="product-card-category">{{ product.category }}</p>
+      <p class="product-card-name">{{ product.name }}</p>
+      <p class="product-card-price">${{ "%.2f"|format(product.price) }}</p>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- Banner CTA -->
+<section class="banner">
+  <h2>Made to last.<br>Chosen with care.</h2>
+  <p>Everything in this shop has been selected because it's genuinely good — not just pretty.</p>
+  <a href="{{ url_for('shop') }}" class="btn btn-rust">View All Products</a>
+</section>
+{% endblock %}

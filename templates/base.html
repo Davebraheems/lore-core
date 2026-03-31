@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Lore & Co.{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #f5f0e8;
+      --ink: #1a1612;
+      --bark: #5c4a32;
+      --rust: #b85c2a;
+      --sage: #6b7c5a;
+      --warm-white: #faf7f2;
+      --border: #d4c9b8;
+      --shadow: rgba(26,22,18,0.08);
+      --font-serif: 'Cormorant Garamond', serif;
+      --font-sans: 'DM Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--warm-white);
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--warm-white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    .nav-logo {
+      font-family: var(--font-serif);
+      font-size: 1.6rem;
+      font-weight: 300;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--rust); }
+    .nav-links { display: flex; align-items: center; gap: 2rem; }
+    .nav-links a {
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--bark);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--rust); }
+    .nav-actions { display: flex; align-items: center; gap: 1.2rem; }
+    .cart-link {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--ink); text-decoration: none;
+      padding: 0.4rem 1rem;
+      border: 1px solid var(--ink);
+      transition: all 0.2s;
+    }
+    .cart-link:hover { background: var(--ink); color: var(--warm-white); }
+    .cart-badge {
+      background: var(--rust); color: white;
+      font-size: 0.65rem; font-weight: 500;
+      padding: 0 0.4rem; border-radius: 999px;
+      min-width: 18px; text-align: center; line-height: 18px;
+    }
+    .btn-nav {
+      font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--bark); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .btn-nav:hover { color: var(--rust); }
+
+    /* ── FLASH ── */
+    .flash-messages { max-width: 1200px; margin: 1rem auto; padding: 0 2rem; }
+    .flash {
+      padding: 0.8rem 1.2rem;
+      border-left: 3px solid;
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+    }
+    .flash.success { border-color: var(--sage); background: #f0f5ec; color: #3d5430; }
+    .flash.danger  { border-color: #c0392b;    background: #fdf2f2; color: #7d1f1f; }
+    .flash.info    { border-color: var(--bark); background: #f5f0e8; color: var(--bark); }
+    .flash.warning { border-color: #e67e22;    background: #fef9f0; color: #7d4a0f; }
+
+    /* ── MAIN ── */
+    main { flex: 1; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-block;
+      padding: 0.75rem 2rem;
+      font-family: var(--font-sans);
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--ink); color: var(--warm-white);
+    }
+    .btn-primary:hover { background: var(--bark); }
+    .btn-secondary {
+      background: transparent; color: var(--ink);
+      border: 1px solid var(--ink);
+    }
+    .btn-secondary:hover { background: var(--ink); color: var(--warm-white); }
+    .btn-rust {
+      background: var(--rust); color: white;
+    }
+    .btn-rust:hover { background: #9a4820; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--ink); color: var(--cream);
+      padding: 3rem 2rem 2rem;
+      margin-top: auto;
+    }
+    .footer-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: grid; grid-template-columns: 2fr 1fr 1fr;
+      gap: 3rem;
+    }
+    .footer-brand .footer-logo {
+      font-family: var(--font-serif);
+      font-size: 1.4rem; font-weight: 300; letter-spacing: 0.08em;
+      color: var(--cream); margin-bottom: 0.75rem;
+    }
+    .footer-brand p { font-size: 0.85rem; color: #9a8f82; line-height: 1.7; }
+    .footer-col h4 {
+      font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: #9a8f82; margin-bottom: 1rem;
+    }
+    .footer-col a {
+      display: block; color: #c4b9ad; font-size: 0.875rem;
+      text-decoration: none; margin-bottom: 0.5rem;
+      transition: color 0.2s;
+    }
+    .footer-col a:hover { color: var(--cream); }
+    .footer-bottom {
+      max-width: 1200px; margin: 2rem auto 0;
+      padding-top: 1.5rem; border-top: 1px solid #3a3028;
+      font-size: 0.75rem; color: #6b5f55;
+      display: flex; justify-content: space-between;
+    }
+
+    /* ── FORMS ── */
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label {
+      display: block; font-size: 0.75rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--bark); margin-bottom: 0.4rem;
+    }
+    .form-group input {
+      width: 100%; padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      background: white; font-family: var(--font-sans);
+      font-size: 0.9rem; color: var(--ink);
+      outline: none; transition: border-color 0.2s;
+    }
+    .form-group input:focus { border-color: var(--bark); }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="{{ url_for('index') }}" class="nav-logo">Lore <span>&</span> Co.</a>
+    <div class="nav-links">
+      <a href="{{ url_for('shop') }}">Shop</a>
+      <a href="{{ url_for('shop', category='Books') }}">Books</a>
+      <a href="{{ url_for('shop', category='Stationery') }}">Stationery</a>
+      <a href="{{ url_for('shop', category='Lifestyle') }}">Lifestyle</a>
+    </div>
+    <div class="nav-actions">
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('account') }}" class="btn-nav">{{ current_user.name.split()[0] }}</a>
+        <a href="{{ url_for('logout') }}" class="btn-nav">Sign Out</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="btn-nav">Sign In</a>
+        <a href="{{ url_for('register') }}" class="btn-nav">Register</a>
+      {% endif %}
+      <a href="{{ url_for('cart') }}" class="cart-link">
+        Bag
+        {% set count = cart_count() %}
+        {% if count > 0 %}<span class="cart-badge">{{ count }}</span>{% endif %}
+      </a>
+    </div>
+  </div>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-messages">
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<main>{% block content %}{% endblock %}</main>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-logo">Lore & Co.</div>
+      <p>A carefully curated shop for those who believe objects should earn their place — beautiful things that make everyday life more considered.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Shop</h4>
+      <a href="{{ url_for('shop', category='Books') }}">Books</a>
+      <a href="{{ url_for('shop', category='Stationery') }}">Stationery</a>
+      <a href="{{ url_for('shop', category='Lifestyle') }}">Lifestyle</a>
+    </div>
+    <div class="footer-col">
+      <h4>Account</h4>
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('account') }}">My Orders</a>
+        <a href="{{ url_for('logout') }}">Sign Out</a>
+      {% else %}
+        <a href="{{ url_for('login') }}">Sign In</a>
+        <a href="{{ url_for('register') }}">Create Account</a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2024 Lore & Co. All rights reserved.</span>
+    <span>Payments secured by Stripe</span>
+  </div>
+</footer>
+
+</body>
+</html>

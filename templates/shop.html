@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block title %}Shop — Lore & Co.{% endblock %}
+
+{% block extra_css %}
+<style>
+  .shop-header {
+    background: var(--cream);
+    padding: 3rem 2rem 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .shop-header-inner { max-width: 1200px; margin: 0 auto; }
+  .shop-header h1 {
+    font-family: var(--font-serif);
+    font-size: 2.5rem; font-weight: 300;
+    margin-bottom: 1.5rem;
+  }
+  .shop-controls {
+    display: flex; align-items: center;
+    gap: 1rem; flex-wrap: wrap;
+  }
+  .filter-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .filter-tab {
+    padding: 0.4rem 1.2rem;
+    font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+    border: 1px solid var(--border); text-decoration: none;
+    color: var(--bark); transition: all 0.2s;
+  }
+  .filter-tab:hover, .filter-tab.active {
+    background: var(--ink); color: var(--warm-white); border-color: var(--ink);
+  }
+  .search-form {
+    margin-left: auto;
+    display: flex; align-items: center;
+    border: 1px solid var(--border);
+    background: white; overflow: hidden;
+  }
+  .search-form input {
+    padding: 0.5rem 1rem;
+    border: none; outline: none;
+    font-family: var(--font-sans); font-size: 0.875rem;
+    width: 220px;
+  }
+  .search-form button {
+    padding: 0.5rem 1rem;
+    background: none; border: none;
+    cursor: pointer; color: var(--bark);
+    font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .search-form button:hover { color: var(--rust); }
+
+  .shop-main { max-width: 1200px; margin: 0 auto; padding: 3rem 2rem; }
+  .result-count {
+    font-size: 0.8rem; color: var(--bark);
+    letter-spacing: 0.05em; margin-bottom: 2rem;
+  }
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 2.5rem;
+  }
+  .product-card { text-decoration: none; color: inherit; }
+  .product-card-img {
+    aspect-ratio: 1; overflow: hidden;
+    background: #ede7dc; margin-bottom: 1rem;
+    position: relative;
+  }
+  .product-card-img img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  .product-card:hover .product-card-img img { transform: scale(1.04); }
+  .product-card-overlay {
+    position: absolute; inset: 0;
+    background: rgba(26,22,18,0.6);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .product-card:hover .product-card-overlay { opacity: 1; }
+  .overlay-text {
+    color: white; font-size: 0.7rem;
+    letter-spacing: 0.15em; text-transform: uppercase;
+  }
+  .product-card-meta { display: flex; justify-content: space-between; align-items: baseline; }
+  .product-card-name {
+    font-family: var(--font-serif);
+    font-size: 1.05rem; font-weight: 400;
+    line-height: 1.3;
+  }
+  .product-card-price { font-size: 0.875rem; color: var(--bark); white-space: nowrap; margin-left: 1rem; }
+  .product-card-category {
+    font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--rust); margin-bottom: 0.35rem;
+  }
+
+  .no-results {
+    text-align: center; padding: 4rem 0; color: var(--bark);
+  }
+  .no-results h3 {
+    font-family: var(--font-serif);
+    font-size: 1.8rem; font-weight: 300; margin-bottom: 0.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="shop-header">
+  <div class="shop-header-inner">
+    <h1>{% if current_category %}{{ current_category }}{% elif search %}Search: "{{ search }}"{% else %}All Products{% endif %}</h1>
+    <div class="shop-controls">
+      <div class="filter-tabs">
+        <a href="{{ url_for('shop') }}" class="filter-tab {% if not current_category %}active{% endif %}">All</a>
+        {% for cat in categories %}
+        <a href="{{ url_for('shop', category=cat) }}"
+           class="filter-tab {% if current_category == cat %}active{% endif %}">{{ cat }}</a>
+        {% endfor %}
+      </div>
+      <form class="search-form" action="{{ url_for('shop') }}" method="get">
+        <input type="text" name="search" placeholder="Search products…" value="{{ search }}">
+        <button type="submit">Go</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="shop-main">
+  <p class="result-count">{{ products|length }} product{{ 's' if products|length != 1 }}</p>
+
+  {% if products %}
+  <div class="products-grid">
+    {% for product in products %}
+    <a href="{{ url_for('product_detail', product_id=product.id) }}" class="product-card">
+      <div class="product-card-img">
+        <img src="{{ product.image_url }}" alt="{{ product.name }}">
+        <div class="product-card-overlay">
+          <span class="overlay-text">View Product</span>
+        </div>
+      </div>
+      <p class="product-card-category">{{ product.category }}</p>
+      <div class="product-card-meta">
+        <span class="product-card-name">{{ product.name }}</span>
+        <span class="product-card-price">${{ "%.2f"|format(product.price) }}</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="no-results">
+    <h3>Nothing found</h3>
+    <p>Try a different category or search term.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

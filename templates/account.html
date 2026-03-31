@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}My Account — Lore & Co.{% endblock %}
+
+{% block extra_css %}
+<style>
+  .account-page { max-width: 900px; margin: 0 auto; padding: 4rem 2rem; }
+  .account-header { margin-bottom: 3rem; }
+  .account-header h1 {
+    font-family: var(--font-serif);
+    font-size: 2rem; font-weight: 300; margin-bottom: 0.25rem;
+  }
+  .account-header p { color: var(--bark); font-size: 0.875rem; }
+
+  .orders-section h2 {
+    font-family: var(--font-serif);
+    font-size: 1.3rem; font-weight: 400;
+    margin-bottom: 1.5rem; padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .order-card {
+    border: 1px solid var(--border); margin-bottom: 1rem; overflow: hidden;
+  }
+  .order-card-header {
+    background: var(--cream); padding: 1rem 1.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 0.8rem;
+  }
+  .order-id { font-weight: 500; }
+  .order-status {
+    padding: 0.2rem 0.75rem; font-size: 0.7rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .order-status.paid { background: #e8f5e9; color: #2e7d32; }
+  .order-status.pending { background: #fff8e1; color: #f57f17; }
+  .order-body { padding: 1rem 1.5rem; }
+  .order-items-list { list-style: none; margin-bottom: 0.75rem; }
+  .order-items-list li {
+    font-size: 0.875rem; color: var(--bark); padding: 0.25rem 0;
+    border-bottom: 1px solid #f0ebe3;
+    display: flex; justify-content: space-between;
+  }
+  .order-total { font-size: 0.9rem; font-weight: 500; text-align: right; }
+
+  .no-orders { text-align: center; padding: 3rem 0; color: var(--bark); }
+  .no-orders h3 {
+    font-family: var(--font-serif);
+    font-size: 1.5rem; font-weight: 300; margin-bottom: 0.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="account-page">
+  <div class="account-header">
+    <h1>Hello, {{ current_user.name.split()[0] }}</h1>
+    <p>{{ current_user.email }} · Member since {{ current_user.created_at.strftime('%B %Y') }}</p>
+  </div>
+
+  <div class="orders-section">
+    <h2>Order History</h2>
+    {% if orders %}
+      {% for order in orders %}
+      <div class="order-card">
+        <div class="order-card-header">
+          <span class="order-id">Order #{{ order.id }}</span>
+          <span>{{ order.created_at.strftime('%b %d, %Y') }}</span>
+          <span class="order-status {{ order.status }}">{{ order.status }}</span>
+        </div>
+        <div class="order-body">
+          <ul class="order-items-list">
+            {% for item in order.items %}
+            <li>
+              <span>{{ item.product.name }} × {{ item.quantity }}</span>
+              <span>${{ "%.2f"|format(item.price * item.quantity) }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+          <p class="order-total">Total: ${{ "%.2f"|format(order.total) }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="no-orders">
+      <h3>No orders yet</h3>
+      <p>Your order history will appear here once you've made a purchase.</p>
+      <br>
+      <a href="{{ url_for('shop') }}" class="btn btn-primary">Browse the Shop</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
