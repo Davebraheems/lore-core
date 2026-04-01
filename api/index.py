@@ -281,11 +281,11 @@ def checkout():
         })
 
     try:
+        base_url = request.host_url.rstrip('/') 
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=['card'],
             line_items=line_items,
             mode='payment',
-            base_url = request.host_url.rstrip('/')
             success_url=f"{base_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{base_url}/cart",
             customer_email=current_user.email if current_user.is_authenticated else None,
