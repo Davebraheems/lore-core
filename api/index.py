@@ -24,7 +24,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Stripe configuration
-stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+
 STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY')
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET','')
 
@@ -259,6 +259,13 @@ def account():
 
 @app.route('/checkout', methods=['POST'])
 def checkout():
+    # Set stripe key here instead of at module level
+    stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+    
+    # Temporary debug check
+    if not stripe.api_key:
+        return f"Stripe key missing. Available env vars: {list(os.environ.keys())}", 500
+
     cart = get_cart()
     if not cart:
         flash('Your cart is empty.', 'warning')
@@ -282,7 +289,8 @@ def checkout():
         })
 
     try:
-        base_url = request.host_url.rstrip('/') 
+        base_url = request.host_url.rstrip('/')
+
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=['card'],
             line_items=line_items,
@@ -293,7 +301,6 @@ def checkout():
             metadata={'user_id': current_user.id if current_user.is_authenticated else ''},
         )
 
-        # Save pending order
         total = cart_total()
         order = Order(
             user_id=current_user.id if current_user.is_authenticated else None,
@@ -322,7 +329,6 @@ def checkout():
     except stripe.error.StripeError as e:
         flash(f'Payment error: {str(e.user_message)}', 'danger')
         return redirect(url_for('cart'))
-
 
 @app.route('/checkout/success')
 def checkout_success():
