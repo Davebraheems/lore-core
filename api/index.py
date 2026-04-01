@@ -285,8 +285,9 @@ def checkout():
             payment_method_types=['card'],
             line_items=line_items,
             mode='payment',
-            success_url=url_for('checkout_success', _external=True) + '?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url=url_for('cart', _external=True),
+            base_url = request.host_url.rstrip('/')
+            success_url=f"{base_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{base_url}/cart",
             customer_email=current_user.email if current_user.is_authenticated else None,
             metadata={'user_id': current_user.id if current_user.is_authenticated else ''},
         )
