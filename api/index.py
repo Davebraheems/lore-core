@@ -390,3 +390,9 @@ with app.app_context():
 @app.errorhandler(500)
 def internal_error(e):
     return f"<pre>{traceback.format_exc()}</pre>", 500
+
+@app.route('/checkout', methods=['POST'])
+def checkout():
+    # Temporary debug — remove after fixing
+    if not stripe.api_key:
+        return f"Stripe key is missing! ENV vars: {list(os.environ.keys())}", 500
