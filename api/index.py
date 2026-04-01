@@ -7,6 +7,7 @@ import os
 import json
 from datetime import datetime
 from dotenv import load_dotenv
+import traceback
 load_dotenv()
 
 
@@ -386,5 +387,6 @@ with app.app_context():
     seed_products()
 
 
-if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+@app.errorhandler(500)
+def internal_error(e):
+    return f"<pre>{traceback.format_exc()}</pre>", 500
