@@ -8,6 +8,7 @@ import json
 from datetime import datetime
 from dotenv import load_dotenv
 import traceback
+from stripe import checkout as stripe_checkout
 load_dotenv()
 
 
@@ -291,7 +292,7 @@ def checkout():
     try:
         base_url = request.host_url.rstrip('/')
 
-        checkout_session = stripe.checkout.Session.create(
+        checkout_session = stripe_checkout.Session.create(
             payment_method_types=['card'],
             line_items=line_items,
             mode='payment',
