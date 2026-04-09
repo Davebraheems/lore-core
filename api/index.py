@@ -260,77 +260,76 @@ def account():
 
 @app.route('/checkout', methods=['POST'])
 def checkout():
-    # Set stripe key here instead of at module level
-    stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+    import requests as http_requests
     
-    # Temporary debug check
-    if not stripe.api_key:
-        return f"Stripe key missing. Available env vars: {list(os.environ.keys())}", 500
+    stripe_key = os.environ.get('STRIPE_SECRET_KEY')
+    if not stripe_key:
+        return "Stripe key missing", 500
 
     cart = get_cart()
     if not cart:
         flash('Your cart is empty.', 'warning')
         return redirect(url_for('cart'))
 
+    base_url = request.host_url.rstrip('/')
     line_items = []
+    i = 0
     for product_id, item in cart.items():
         product = Product.query.get(int(product_id))
         if not product:
             continue
-        line_items.append({
-            'price_data': {
-                'currency': 'usd',
-                'product_data': {
-                    'name': product.name,
-                    'images': [product.image_url] if product.image_url and product.image_url.startswith('http') else [],
-                },
-                'unit_amount': int(product.price * 100),
-            },
-            'quantity': item['quantity'],
-        })
+        line_items.append((f'line_items[{i}][price_data][currency]', 'usd'))
+        line_items.append((f'line_items[{i}][price_data][product_data][name]', product.name))
+        line_items.append((f'line_items[{i}][price_data][unit_amount]', str(int(product.price * 100))))
+        line_items.append((f'line_items[{i}][quantity]', str(item['quantity'])))
+        i += 1
 
-    try:
-        base_url = request.host_url.rstrip('/')
+    form_data = line_items + [
+        ('mode', 'payment'),
+        ('success_url', f"{base_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}"),
+        ('cancel_url', f"{base_url}/cart"),
+    ]
 
-        checkout_session = stripe_checkout.Session.create(
-            payment_method_types=['card'],
-            line_items=line_items,
-            mode='payment',
-            success_url=f"{base_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=f"{base_url}/cart",
-            customer_email=current_user.email if current_user.is_authenticated else None,
-            metadata={'user_id': current_user.id if current_user.is_authenticated else ''},
-        )
+    if current_user.is_authenticated:
+        form_data.append(('customer_email', current_user.email))
 
-        total = cart_total()
-        order = Order(
-            user_id=current_user.id if current_user.is_authenticated else None,
-            stripe_session_id=checkout_session.id,
-            total=total,
-            status='pending',
-            customer_email=current_user.email if current_user.is_authenticated else None,
-        )
-        db.session.add(order)
-        db.session.flush()
+    response = http_requests.post(
+        'https://api.stripe.com/v1/checkout/sessions',
+        data=form_data,
+        auth=(stripe_key, '')
+    )
 
-        for product_id, item in cart.items():
-            product = Product.query.get(int(product_id))
-            if product:
-                order_item = OrderItem(
-                    order_id=order.id,
-                    product_id=product.id,
-                    quantity=item['quantity'],
-                    price=product.price,
-                )
-                db.session.add(order_item)
-
-        db.session.commit()
-        return redirect(checkout_session.url, code=303)
-
-    except stripe.error.StripeError as e:
-        flash(f'Payment error: {str(e.user_message)}', 'danger')
+    if response.status_code != 200:
+        flash(f'Payment error: {response.json().get("error", {}).get("message", "Unknown error")}', 'danger')
         return redirect(url_for('cart'))
 
+    session_data = response.json()
+
+    # Save pending order
+    total = cart_total()
+    order = Order(
+        user_id=current_user.id if current_user.is_authenticated else None,
+        stripe_session_id=session_data['id'],
+        total=total,
+        status='pending',
+        customer_email=current_user.email if current_user.is_authenticated else None,
+    )
+    db.session.add(order)
+    db.session.flush()
+
+    for product_id, item in cart.items():
+        product = Product.query.get(int(product_id))
+        if product:
+            order_item = OrderItem(
+                order_id=order.id,
+                product_id=product.id,
+                quantity=item['quantity'],
+                price=product.price,
+            )
+            db.session.add(order_item)
+
+    db.session.commit()
+    return redirect(session_data['url'], code=303)
 @app.route('/checkout/success')
 def checkout_success():
     session_id = request.args.get('session_id')
@@ -398,3 +397,5 @@ with app.app_context():
 def internal_error(e):
     return f"<pre>{traceback.format_exc()}</pre>", 500
 
+if __name__ == '__main__':
+    app.run(debug=True)
